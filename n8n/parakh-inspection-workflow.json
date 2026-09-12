@@ -1,0 +1,240 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3274f1c9-ede9-4354-8733-c0997a67bb38",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "image"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -336,
+        0
+      ],
+      "id": "30b032bd-8d29-4923-883d-4a72cebcf8f9",
+      "name": "Webhook",
+      "webhookId": "3274f1c9-ede9-4354-8733-c0997a67bb38"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1632,
+        16
+      ],
+      "id": "28b2fb8f-6200-428a-b42d-02d4db453a42",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "text": "Analyze this product label carefully.\n\nExtract only information that is clearly visible in the image.\nDo not guess or infer information.\n\nReturn ONLY valid JSON using EXACTLY this structure:\n\n{\n  \"productName\": \"\",\n  \"brand\": \"\",\n  \"category\": \"\",\n  \"description\": \"\",\n  \"netQuantity\": \"\",\n  \"price\": \"\",\n  \"ingredients\": [],\n  \"nutritionalInformation\": {\n    \"servingSize\": \"\",\n    \"protein\": \"\",\n    \"carbohydrate\": \"\",\n    \"sugar\": \"\",\n    \"fat\": \"\",\n    \"energy\": \"\"\n  },\n  \"allergens\": \"\",\n  \"manufacturingDate\": \"\",\n  \"expiryDate\": \"\",\n  \"batchNumber\": \"\",\n  \"manufacturer\": \"\",\n  \"manufacturerAddress\": \"\",\n  \"countryOfOrigin\": \"\",\n  \"customerCare\": \"\",\n  \"storageInstructions\": \"\",\n  \"usageInstructions\": \"\",\n  \"certifications\": \"\",\n  \"barcode\": \"\",\n  \"complianceStatus\": \"\"\n}\n\nRules:\n\n1. Use exactly the field names shown above.\n2. Do not remove any field.\n3. If a simple field is not visible, use \"Not Available\".\n4. ingredients:\n   - Extract every visible ingredient.\n   - Return them as an array.\n   - Example:\n     [\"Rajgira\", \"Peanut\", \"Cardamom\", \"Jaggery\", \"Sugar\"]\n   - If no ingredients are visible, return [\"Not Available\"].\n\n5. nutritionalInformation:\n   - Extract every visible nutritional value.\n   - Extract servingSize if visible.\n   - For protein, carbohydrate, sugar, fat, and energy, extract the exact visible value.\n   - If an individual value is not visible, use \"Not Available\".\n   - Do not replace the entire nutritionalInformation object with \"Not Available\".\n\n6. allergens:\n   - Extract explicitly stated allergen information.\n   - Do not infer allergens only from the ingredients list.\n\n7. expiryDate:\n   - Extract \"Expiry Date\", \"Best Before\", \"Use By\", or similar visible expiry information.\n   - If the label says \"Best Before 30 Days\", return \"30 Days\" or the exact visible phrase.\n\n8. Count only top-level fields with the exact value \"Not Available\".\n9. Do not count individual nutritionalInformation subfields.\n10. complianceStatus:\n    - 0 unavailable → \"Success\"\n    - 1 or 2 unavailable → \"Under Review\"\n    - More than 2 unavailable  → \"Failed\"\n\nReturn only valid JSON.\nNo markdown.\nNo explanation.",
+        "inputType": "binary",
+        "binaryPropertyName": "=image0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "04ee45bd-498b-4b15-8f36-a3e921cc4942",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "tTOzUGXnWATA75zX",
+          "name": "Google Gemini(PaLM) Api account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "scan_history",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "product_name/ brand",
+              "fieldValue": "={{ $json.product_name }}"
+            },
+            {
+              "fieldId": "compliance_status",
+              "fieldValue": "={{ $json.compliance_status }}"
+            },
+            {
+              "fieldId": "scan_date",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "report",
+              "fieldValue": "={{ $json.report }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        912,
+        0
+      ],
+      "id": "090461c8-4b04-4ef3-bb69-327a3c25cfe6",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "eZdfcxofixQOP1Yu",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\n// Get Gemini response text\nconst text = input.content?.parts?.[0]?.text || \"\";\n\nlet report;\n\ntry {\n  // Remove markdown code blocks if Gemini returns them\n  const cleanText = text\n    .replace(/```json/g, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  report = JSON.parse(cleanText);\n} catch (error) {\n  // If Gemini does not return valid JSON\n  report = {\n    raw_report: text\n  };\n}\n\nreturn [\n  {\n    json: {\n      product_name:\n        report.productName ||\n        report.product_name ||\n        report.product?.name ||\n        \"Not Available\",\n\n      brand:\n        report.brand ||\n        report.product?.brand ||\n        \"Not Available\",\n\n      compliance_status:\n        report.complianceStatus ||\n        report.compliance_status ||\n        \"Under Review\",\n\n      report: report\n    }\n  }\n];;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        0
+      ],
+      "id": "2bb871ba-d2a2-448c-bd7c-61bba4f9edec",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "yashsingh8.app.n8n.cloud",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+            "content-length": "2486082",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "en-US,en;q=0.9,en-IN;q=0.8",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "117.233.175.109",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "IN",
+            "cf-ray": "a3a121dc2bbba913-MAA",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryhpKCxOg4o6qDLniP",
+            "origin": "http://127.0.0.1:5500",
+            "priority": "u=1, i",
+            "referer": "http://127.0.0.1:5500/",
+            "sec-ch-ua": "\"Microsoft Edge\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "117.233.175.109, 162.158.55.86",
+            "x-forwarded-host": "yashsingh8.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-swc-19-6cff947fff-b8cvt",
+            "x-is-trusted": "yes",
+            "x-real-ip": "117.233.175.109"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://yashsingh8.app.n8n.cloud/webhook/3274f1c9-ede9-4354-8733-c0997a67bb38",
+          "executionMode": "production"
+        },
+        "binary": {
+          "image0": {
+            "mimeType": "image/png",
+            "fileType": "image",
+            "fileExtension": "png",
+            "data": "filesystem-v2",
+            "fileName": "pass.png",
+            "id": "filesystem-v2:workflows/oxtEkuL9u1uMOOui/executions/69/binary_data/afcd8a3d-5ce6-466f-8e38-4005ab56723d",
+            "fileSize": "2.49 MB",
+            "bytes": 2485901
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "71033b84-a173-4de1-9ccb-4a947a6f2236",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e42efc31f66c0562be7574246846f3b6eefc6d59f9a81346b9053da0ff889324"
+  },
+  "nodeGroups": [],
+  "id": "oxtEkuL9u1uMOOui",
+  "tags": []
+}

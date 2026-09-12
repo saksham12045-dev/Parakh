@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Parakh — packaged commodity compliance inspection system." />
+  <title>Parakh — Compliance Inspection</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <!-- COVER / ENTRY -->
+  <section id="coverPage" class="cover-page">
+    <div class="cover-image" aria-hidden="true"></div>
+    <div class="cover-vignette" aria-hidden="true"></div>
+
+    <header class="cover-nav">
+      <nav class="cover-links" aria-label="Cover navigation">
+        <a href="#aboutParaakh">About</a>
+        <a href="#regulatoryFramework">Framework</a>
+      </nav>
+    </header>
+
+    <div class="cover-title">
+      <p class="eyebrow light">Legal Metrology · Packaged Commodities</p>
+      <h1>परख</h1>
+      <p>Inspect. Verify. Trust.</p>
+    </div>
+
+    <div class="cover-panel">
+      <p class="panel-kicker">Packaged commodity inspection</p>
+      <h2>Make compliance easier to inspect.</h2>
+      <p>Screen product images and labels against applicable Legal Metrology requirements, then review the evidence.</p>
+      <button class="btn btn-light" id="enterAppBtn" type="button">Enter Parakh <span
+          aria-hidden="true">→</span></button>
+    </div>
+  </section>
+
+  <!-- APPLICATION -->
+  <div id="appShell" class="app-shell hidden">
+    <header class="app-header">
+      <div class="header-inner">
+        <a href="#dashboard" class="brand brand-dark" data-view="dashboard" aria-label="Parakh home">
+          <span class="parakh-logo"><img src="/assets/logo.svg"></span>
+        </a>
+
+      </div>
+    </header>
+
+    <nav class="app-nav" aria-label="Main navigation">
+      <div class="nav-inner">
+        <div class="nav-links">
+          <button class="nav-link active" data-view="dashboard">Overview</button>
+          <button class="nav-link" data-view="inspect">Inspect</button>
+          <button class="nav-link" data-view="history">History</button>
+          <button class="nav-link" data-view="reports">Reports</button>
+          <button class="nav-link" data-view="framework">Framework</button>
+        </div>
+        <button class="nav-help" id="aboutBtn" type="button">About Parakh</button>
+      </div>
+    </nav>
+
+    <main>
+      <!-- DASHBOARD -->
+      <section id="view-dashboard" class="view active-view">
+        <div class="page-wrap">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">Inspection workspace</p>
+              <h1>Review packaged commodities with clarity.</h1>
+              <p class="lede">Upload a label or product image to screen mandatory declarations and surface items that
+                need attention.</p>
+            </div>
+            <button class="btn btn-primary" data-view="inspect" type="button">Start inspection <span>→</span></button>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="primary-card inspection-launch">
+              <div class="section-label"><span>01</span> New inspection</div>
+              <div class="launch-content">
+                <div>
+                  <h2>Inspect a product label</h2>
+                  <p>Upload a clear package image to extract its declarations and check them against the applicable
+                    requirements.</p>
+                </div>
+              </div>
+              <button class="btn btn-primary" data-view="inspect" type="button">Start inspection <span>→</span></button>
+            </section>
+
+            <aside class="summary-card">
+              <div class="section-label"><span>02</span> Activity</div>
+              <div class="summary-number" id="inspectionCount">0</div>
+              <p>completed inspections</p>
+              <div class="summary-breakdown">
+                <div><span class="status-dot green"></span><strong
+                    id="compliantCount">0</strong><small>Compliant</small></div>
+                <div><span class="status-dot red"></span><strong id="flaggedCount">0</strong><small>Flagged</small>
+                </div>
+                <div><span class="status-dot amber"></span><strong id="reviewCount">0</strong><small>Review</small>
+                </div>
+              </div>
+              <button class="text-link" data-view="history" type="button">View inspection history →</button>
+            </aside>
+          </div>
+
+          <section class="section-block recent-block">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Recent inspections</p>
+                <h2>Latest screening activity</h2>
+              </div>
+              <button class="text-link" data-view="history" type="button">See all →</button>
+            </div>
+            <div class="inspection-table-wrap">
+              <table class="inspection-table">
+                <thead>
+                  <tr>
+                    <th>Product / reference</th>
+                    <th>Checked</th>
+                    <th>Declarations</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="recentTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- INSPECT -->
+      <section id="view-inspect" class="view">
+        <div class="page-wrap narrow-wrap">
+          <div class="page-heading compact-heading">
+            <div>
+              <p class="eyebrow">Inspection desk</p>
+              <h1>Submit a product for screening.</h1>
+              <p class="lede">Upload a clear image of the package or label for declaration extraction and compliance
+                screening.</p>
+            </div>
+          </div>
+
+          <div class="inspect-layout">
+            <section class="upload-card">
+              <div class="card-topline"><span>INPUT</span><span>IMAGE / LABEL</span></div>
+              <label class="dropzone" id="dropzone" for="productFile">
+                <input id="productFile" type="file" accept="image/*" hidden />
+                <div class="upload-icon">↑</div>
+                <h2>Drop a product image here</h2>
+                <p>or <span>browse from your device</span></p>
+                <small>JPG, PNG or WEBP · recommended: clear label photo</small>
+              </label>
+              <div class="file-preview hidden" id="filePreview">
+                <img id="previewImage" alt="Selected product preview" />
+                <div><strong id="fileName">product.jpg</strong><span id="fileMeta">Ready for screening</span></div>
+                <button class="icon-button" id="removeFile" type="button" aria-label="Remove selected file">×</button>
+              </div>
+              <button class="btn btn-primary btn-wide" id="inspectBtn" type="button" disabled>Start inspection</button>
+            </section>
+
+            <aside class="process-card">
+              <div class="section-label"><span>HOW</span> Screening flow</div>
+              <ol class="process-list">
+                <li><span>01</span>
+                  <div><strong>Capture</strong>
+                    <p>Receive the package image or label.</p>
+                  </div>
+                </li>
+                <li><span>02</span>
+                  <div><strong>Extract</strong>
+                    <p>Read visible declarations and supporting text.</p>
+                  </div>
+                </li>
+                <li><span>03</span>
+                  <div><strong>Validate</strong>
+                    <p>Compare extracted fields with configured requirements.</p>
+                  </div>
+                </li>
+                <li><span>04</span>
+                  <div><strong>Review</strong>
+                    <p>Surface missing, unclear or potentially non-compliant items.</p>
+                  </div>
+                </li>
+              </ol>
+            </aside>
+          </div>
+
+          <div id="resultPanel" class="result-panel hidden"></div>
+        </div>
+      </section>
+
+      <!-- HISTORY -->
+      <section id="view-history" class="view">
+        <div class="page-wrap">
+          <div class="page-heading compact-heading">
+            <div>
+              <p class="eyebrow">Repository</p>
+              <h1>Inspection history.</h1>
+              <p class="lede">A working record of screenings completed during this session.</p>
+            </div><button class="btn btn-primary" data-view="inspect" type="button">New inspection →</button>
+          </div>
+          <div class="filter-row"><button class="filter active" data-filter="all">All</button><button class="filter"
+              data-filter="compliant">Compliant</button>
+              <button class="filter"
+              data-filter="flagged">Flagged</button>
+              <button class="filter" data-filter="review">Review</button></div>
+          <div class="inspection-table-wrap">
+            <table class="inspection-table">
+              <thead>
+                <tr>
+                  <th>Product / reference</th>
+                  <th>Date</th>
+                  <th>Fields</th>
+                  <th>Status</th>
+                  <th>Report</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- REPORTS -->
+      <section id="view-reports" class="view">
+        <div class="page-wrap">
+          <div class="page-heading compact-heading">
+            <div>
+              <p class="eyebrow">Evidence & outputs</p>
+              <h1>Compliance reports.</h1>
+              <p class="lede">Review generated screening summaries and export a simple report for the current demo
+                result.</p>
+            </div>
+          </div>
+          <div class="reports-grid">
+            <article class="report-card empty-report">
+              <div class="report-type">REPORTS</div>
+              <h2>No reports yet</h2>
+              <p>Completed inspections will appear here once inspection records are available.</p>
+              <button class="btn btn-primary" data-view="inspect" type="button">Start inspection <span>→</span></button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- FRAMEWORK -->
+      <section id="view-framework" class="view">
+        <div class="page-wrap">
+          <div class="page-heading compact-heading">
+            <div>
+              <p class="eyebrow">Regulatory framework</p>
+              <h1>The rules behind the screening.</h1>
+              <p class="lede">Parakh's screening workflow is framed around the Legal Metrology (Packaged Commodities)
+                Rules, 2011. The official source remains the authority for the applicable legal text.</p>
+            </div>
+          </div>
+          <section class="framework-card">
+            <div class="framework-copy">
+              <div class="official-kicker"><span class="seal-mark">LM</span><span>Government reference</span></div>
+              <h2>Legal Metrology (Packaged Commodities) Rules, 2011</h2>
+              <p>The official 2011 rules document is provided here as the regulatory reference for package screening.
+                Parakh is intended as a screening and inspection-assistance interface; it does not replace the
+                applicable law or an authorised officer's legal determination.</p>
+              <div class="framework-actions">
+                <a class="btn btn-primary" href="assets/legal-metrology-rules-2011.pdf" target="_blank" rel="noopener">
+                  Open official PDF ↗
+                </a>
+                <!-- <a class="btn btn-secondary" href="https://www.indiacode.nic.in/handle/123456789/2102" target="_blank"
+                  rel="noopener">View India Code ↗</a> -->
+              </div>
+              <p class="source-note">Source: Government consumer affairs portal · Legal Metrology (Packaged Commodities)
+                Rules, 2011. Government pages also publish subsequent amendments; always consult the current applicable
+                text before relying on a legal requirement.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ABOUT -->
+      <section id="aboutParaakh" class="about-section">
+        <div class="page-wrap about-wrap">
+          <div>
+            <p class="eyebrow">About Parakh</p>
+            <h2>A practical inspection layer between product images and compliance review.</h2>
+          </div>
+          <p>Parakh is an intelligent inspection layer that converts product package images into structured declarations
+            and compliance insights. It helps identify relevant information quickly and supports transparent,
+            evidence-based regulatory review.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer id="regulatoryFramework" class="app-footer">
+      <div class="footer-main">
+        <div>
+          <div class="brand brand-light footer-brand"><span>PARAKH</span></div>
+          <p>Digital compliance screening for packaged commodities.</p>
+        </div>
+        <div class="footer-links"><button data-view="framework" type="button">Regulatory framework</button><a
+            href="/assets/legal-metrology-rules-2011.pdf" target="_blank" rel="noopener">legal-metrology-rules-2011
+            ↗</a><button id="returnCoverBtn" type="button">Return to cover</button></div>
+      </div>
+      <div class="footer-bottom"><span>Compliance screening interface</span></div>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="js/script.js"></script>
+</body>
+
+</html>
