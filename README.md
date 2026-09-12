@@ -1,4 +1,4 @@
-# Parakh — PS-26034
+# Parakh 
 
 A lightweight HTML/CSS/Vanilla JavaScript implementation for a packaged-commodity compliance inspection workflow.
 
